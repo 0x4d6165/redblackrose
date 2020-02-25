@@ -1,0 +1,2 @@
+{:require [redblackrose.core]
+ :compiler-options {:main "redblackrose.app", :asset-path "/js/out", :output-to "public/js/app.js", :output-dir "public/js/out", :source-map true, :optimizations :none, :pretty-print true}}
