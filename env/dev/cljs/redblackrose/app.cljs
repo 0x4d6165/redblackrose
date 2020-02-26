@@ -1,4 +1,4 @@
-(ns^:figwheel-no-load redblackrose.app
+(ns ^:dev/once redblackrose.app
   (:require
     [redblackrose.core :as core]
     [cljs.spec.alpha :as s]

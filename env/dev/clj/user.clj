@@ -6,7 +6,6 @@
     [clojure.spec.alpha :as s]
     [expound.alpha :as expound]
     [mount.core :as mount]
-    [redblackrose.figwheel :refer [start-fw stop-fw cljs]]
     [redblackrose.core :refer [start-app]]
     [redblackrose.db.core]
     [conman.core :as conman]

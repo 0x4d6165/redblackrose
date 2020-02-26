@@ -11,6 +11,7 @@
                  [cheshire "5.9.0"]
                  [clojure.java-time "0.3.2"]
                  [com.cognitect/transit-clj "0.8.319"]
+                 [com.google.javascript/closure-compiler-unshaded "v20190618" :scope "provided"]
                  [com.walmartlabs/lacinia "0.32.0"]
                  [conman "0.8.4"]
                  [cprop "0.1.15"]
@@ -28,17 +29,20 @@
                  [nrepl "0.6.0"]
                  [org.clojure/clojure "1.10.1"]
                  [org.clojure/clojurescript "1.10.597" :scope "provided"]
+                 [org.clojure/core.async "0.4.500"]
                  [org.clojure/data.json "0.2.6"]
+                 [org.clojure/google-closure-library "0.0-20190213-2033d5d9" :scope "provided"]
                  [org.clojure/tools.cli "0.4.2"]
                  [org.clojure/tools.logging "0.5.0"]
-                 [org.postgresql/postgresql "42.2.9"]
                  [org.webjars.npm/bulma "0.8.0"]
                  [org.webjars.npm/material-icons "0.3.1"]
                  [org.webjars/webjars-locator "0.38"]
+                 [org.xerial/sqlite-jdbc "3.28.0"]
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.8.0"]
                  [ring/ring-defaults "0.3.2"]
-                 [selmer "1.12.18"]]
+                 [selmer "1.12.18"]
+                 [thheller/shadow-cljs "2.8.69" :scope "provided"]]
 
   :min-lein-version "2.0.0"
   
@@ -49,7 +53,7 @@
   :main ^:skip-aot redblackrose.core
 
   :plugins [[org.clojars.punkisdead/lein-cucumber "1.0.5"]
-            [lein-cljsbuild "1.1.7"]
+            [lein-shadow "0.1.7"]
             [lein-sassc "0.10.4"]
             [lein-auto "0.1.2"]
             [lein-kibit "0.1.2"]]
@@ -69,34 +73,30 @@
   
   :hooks [leiningen.sassc]
   :clean-targets ^{:protect false}
-  [:target-path [:cljsbuild :builds :app :compiler :output-dir] [:cljsbuild :builds :app :compiler :output-to]]
-  :figwheel
-  {:http-server-root "public"
-   :server-logfile "log/figwheel-logfile.log"
-   :nrepl-port 7002
-   :css-dirs ["resources/public/css"]
-   :nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
+  [:target-path "target/cljsbuild"]
+  :shadow-cljs
+  {:nrepl {:port 7002}
+   :builds
+   {:app
+    {:target :browser
+     :output-dir "target/cljsbuild/public/js"
+     :asset-path "/js"
+     :modules {:app {:entries [redblackrose.app]}}
+     :devtools {:watch-dir "resources/public"}}
+    :test
+    {:target :node-test
+     :output-to "target/test/test.js"
+     :autorun true}}}
   
+  :npm-deps [[shadow-cljs "2.8.69"]]
 
   :profiles
   {:uberjar {:omit-source true
-             :prep-tasks ["compile" ["cljsbuild" "once" "min"]]
-             :cljsbuild{:builds
-              {:min
-               {:source-paths ["src/cljc" "src/cljs" "env/prod/cljs"]
-                :compiler
-                {:output-dir "target/cljsbuild/public/js"
-                 :output-to "target/cljsbuild/public/js/app.js"
-                 :source-map "target/cljsbuild/public/js/app.js.map"
-                 :optimizations :advanced
-                 :pretty-print false
-                 :infer-externs true
-                 :closure-warnings
-                 {:externs-validation :off :non-standard-jsdoc :off}}}}}
+             :prep-tasks ["compile" ["shadow" "release" "app"]]
              
              :aot :all
              :uberjar-name "redblackrose.jar"
-             :source-paths ["env/prod/clj"]
+             :source-paths ["env/prod/clj" "env/prod/cljs"]
              :resource-paths ["env/prod/resources"]}
 
    :dev           [:project/dev :profiles/dev]
@@ -106,8 +106,6 @@
                   :dependencies [[binaryage/devtools "0.9.11"]
                                  [cider/piggieback "0.4.2"]
                                  [clj-webdriver/clj-webdriver "0.7.2"]
-                                 [doo "0.1.11"]
-                                 [figwheel-sidecar "0.5.19"]
                                  [org.apache.httpcomponents/httpcore "4.4"]
                                  [org.clojure/core.cache "0.6.3"]
                                  [org.seleniumhq.selenium/selenium-server "2.48.2" :exclusions [org.bouncycastle/bcprov-jdk15on org.bouncycastle/bcpkix-jdk15on]]
@@ -116,25 +114,10 @@
                                  [ring/ring-devel "1.8.0"]
                                  [ring/ring-mock "0.4.0"]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.24.1"]
-                                 [jonase/eastwood "0.3.5"]
-                                 [lein-doo "0.1.11"]
-                                 [lein-figwheel "0.5.19"]]
-                  :cljsbuild{:builds
-                   {:app
-                    {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
-                     :figwheel {:on-jsload "redblackrose.core/mount-components"}
-                     :compiler
-                     {:main "redblackrose.app"
-                      :asset-path "/js/out"
-                      :output-to "target/cljsbuild/public/js/app.js"
-                      :output-dir "target/cljsbuild/public/js/out"
-                      :source-map true
-                      :optimizations :none
-                      :pretty-print true}}}}
+                                 [jonase/eastwood "0.3.5"]]
                   
                   
-                  :doo {:build "test"}
-                  :source-paths ["env/dev/clj"]
+                  :source-paths ["env/dev/clj" "env/dev/cljs" "test/cljs"]
                   :resource-paths ["env/dev/resources"]
                   :repl-options {:init-ns user
                                  :timeout 120000}
@@ -142,15 +125,7 @@
                                (pjstadig.humane-test-output/activate!)]}
    :project/test {:jvm-opts ["-Dconf=test-config.edn"]
                   :resource-paths ["env/test/resources"]
-                  :cljsbuild 
-                  {:builds
-                   {:test
-                    {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
-                     :compiler
-                     {:output-to "target/test.js"
-                      :main "redblackrose.doo-runner"
-                      :optimizations :whitespace
-                      :pretty-print true}}}}
+                  
                   
                   }
    :profiles/dev {}

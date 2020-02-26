@@ -1,6 +1,6 @@
 (ns redblackrose.core)
 
-(defn mount-components []
+(defn ^:dev/after-load mount-components []
   (let [content (js/document.getElementById "app")]
     (while (.hasChildNodes content)
       (.removeChild content (.-lastChild content)))
