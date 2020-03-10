@@ -12,6 +12,7 @@
                  [clojure.java-time "0.3.2"]
                  [com.cognitect/transit-clj "0.8.319"]
                  [com.google.javascript/closure-compiler-unshaded "v20190618" :scope "provided"]
+                 [com.h2database/h2 "1.4.200"]
                  [com.walmartlabs/lacinia "0.32.0"]
                  [conman "0.8.4"]
                  [cprop "0.1.15"]
@@ -37,7 +38,6 @@
                  [org.webjars.npm/bulma "0.8.0"]
                  [org.webjars.npm/material-icons "0.3.1"]
                  [org.webjars/webjars-locator "0.38"]
-                 [org.xerial/sqlite-jdbc "3.28.0"]
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.8.0"]
                  [ring/ring-defaults "0.3.2"]
@@ -55,6 +55,7 @@
   :plugins [[org.clojars.punkisdead/lein-cucumber "1.0.5"]
             [lein-shadow "0.1.7"]
             [lein-sassc "0.10.4"]
+            [io.taylorwood/lein-native-image "0.3.1"]
             [lein-auto "0.1.2"]
             [lein-kibit "0.1.2"]]
   ;; Exclude :no-ns-form-found linter to avoid warnings on step definitions.
@@ -93,12 +94,14 @@
   :profiles
   {:uberjar {:omit-source true
              :prep-tasks ["compile" ["shadow" "release" "app"]]
-             
+
              :aot :all
              :uberjar-name "redblackrose.jar"
              :source-paths ["env/prod/clj" "env/prod/cljs"]
              :resource-paths ["env/prod/resources"]}
-
+   :native-image {:opts ["--report-unsupported-elements-at-runtime"
+                       "--initialize-at-build-time"
+                       "--verbose"]}
    :dev           [:project/dev :profiles/dev]
    :test          [:project/dev :project/test :profiles/test]
 
@@ -115,8 +118,8 @@
                                  [ring/ring-mock "0.4.0"]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.24.1"]
                                  [jonase/eastwood "0.3.5"]]
-                  
-                  
+
+
                   :source-paths ["env/dev/clj" "env/dev/cljs" "test/cljs"]
                   :resource-paths ["env/dev/resources"]
                   :repl-options {:init-ns user
@@ -124,9 +127,9 @@
                   :injections [(require 'pjstadig.humane-test-output)
                                (pjstadig.humane-test-output/activate!)]}
    :project/test {:jvm-opts ["-Dconf=test-config.edn"]
-                  :resource-paths ["env/test/resources"]
-                  
-                  
-                  }
+                  :resource-paths ["env/test/resources"]}
+
+
+
    :profiles/dev {}
    :profiles/test {}})
