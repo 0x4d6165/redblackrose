@@ -1,26 +1,28 @@
-import { Component, render, version } from 'inferno';
-import { Incrementer } from './components/Incrementer';
-import './main.css';
+import * as mostdom from '@cycle/dom/most-typings'
+import { Sources } from '@cycle/run';
+import { setup } from '@cycle/most-run';
+import { div, input, span, makeDOMDriver, MainDOMSource } from '@cycle/dom';
+import { of, Stream, startWith } from 'most';
 
-const container = document.getElementById('app');
+function Checkbox(sources: Sources) {
+	const click$ = sources.DOM.select('.checkbox').events('click');
+	const toggleCheck$ = click$
+		.filter(ev => ev.target instanceof HTMLInputElement)
+		.map(ev => ev.target.checked)
 
-class MyComponent extends Component<any, any> {
-	private readonly tsxVersion: number;
+	const toggled$ = startWith(false, toggleCheck$)
 
-	constructor(props, context) {
-		super(props, context);
+	const vdom$ = toggled$.map(toggled =>
+		div('.checkbox', [
+			input('.checkbox', {attrs: {type: 'checkbox', checked: toggled}}),
+			'Label Here'
+		])
+	);
 
-		this.tsxVersion = 3.21; /* This is typed value */
-	}
-
-	public render() {
-		return (
-			<div>
-				<h1>{`Welcome to Inferno ${version} TSX ${this.tsxVersion}`}</h1>
-				<Incrementer name={'Crazy button'} />
-			</div>
-		);
+	return {
+		DOM: vdom$
 	}
 }
 
-render(<MyComponent />, container);
+const {sources, sinks, run} = setup(Checkbox, { DOM: makeDOMDriver('#mount')});
+const dispose = run();
