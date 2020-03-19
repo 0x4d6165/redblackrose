@@ -1,0 +1,30 @@
+# redblackrose
+
+** Overview
+
+Soon to-be web forum for ancoms written in Inferno (JSX + typescript)
+with webpack and go with gin.
+
+** Getting started
+   :PROPERTIES:
+   :CUSTOM_ID: getting-started
+   :END:
+
+Clone this repository locally and then run =npm install=.
+
+To run the example app, run =npm start=. View =http://localhost:8080= in
+your browser to see the example.
+
+** Setup
+   :PROPERTIES:
+   :CUSTOM_ID: setup
+   :END:
+
+Run =npm run check= to validate all types
+
+** Requirements
+   :PROPERTIES:
+   :CUSTOM_ID: requirements
+   :END:
+
+NodeJS v6+ is required.
